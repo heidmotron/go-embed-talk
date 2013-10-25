@@ -1,0 +1,110 @@
+Embedding
+
+Matthew Heidemann
+Pivotal Tracker
+@heidmotron
+
+* Definition
+
+Go does not provide the typical, type-driven notion of subclassing, but it does have the ability to “borrow” pieces of an implementation by embedding types within a struct or interface.
+
+* Where have you seen this before?
+
+  type ReadWriter interface {
+    Reader
+    Writer
+  }
+
+  type Reader interface {
+    Read(p []byte) (n int, err error)
+  }
+
+  type Writer interface {
+    Write(p []byte) (n int, err error)
+  }
+
+* Basics
+
+- How do we define types?
+
+  type Story struct {
+    Id int64
+    Title string
+    State string
+  }
+
+  type Foo int64
+
+* Defining methods
+  type Story struct {
+    Id int64
+    Title string
+  }
+
+  // Value Receivers
+  func (s Story) isNew() bool {
+    return s.Id == 0
+  }
+
+  // Pointer Receivers
+  func (s *Story) Url() string {
+    url := "/services/v5/stories"
+    if !s.IsNew() {
+      url = fmt.Sprintf("%s/%d", url, s.Id)
+    }
+    return url
+  }
+
+* So now what?
+Let's say we have 3 more models that need IsNew behavior:
+
+  type Project struct {
+    Id int64
+  }
+
+  type Task struct {
+    Id int64
+  }
+
+  type Comment struct {
+    Id int64
+  }
+
+How should we do this? Copy-Pasta
+
+* In other languages ruby, java, js
+
+Define some abstract Model class with `IsNew` behavior
+
+  // backbone.js
+  Backbone.Model = function(attributes, options) {
+    ...
+    isNew: function() {
+      return this.id == null;
+    },
+    ...
+  }
+
+
+
+* Let's embed
+
+It's about composition, we now get all of `Id's` methods on the `Story`
+
+.play embed/1.go
+
+* This will work for more complex types
+
+.play embed/c.go
+
+
+* How do we override
+
+.play embed/2.go
+
+
+
+
+
+
+
